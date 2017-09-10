@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import propTypes from 'prop-types';
 import hoistNonReactStatic from 'hoist-non-react-statics';
 
-const atlas = (atlasRequestDescription, { options = {}, propName = 'request', auto = true } = {}) => (TargetComponent) => {
+const atlas = (atlasRequestDescription, { options = {}, propName = 'request', auto = true, props } = {}) => (TargetComponent) => {
   class AtlasConnectedComponent extends Component {
     constructor(props, context) {
       super(props, context);
@@ -58,12 +58,17 @@ const atlas = (atlasRequestDescription, { options = {}, propName = 'request', au
     }
 
     render() {
-      const props = {...this.props};
-      props[propName] = {
+      const newProps = {...this.props};
+      newProps[propName] = {
         ...this.state,
         fetchData: this.fetchData,
       };
-      return <TargetComponent {...props} />;
+
+      if (props) {
+        return <TargetComponent {...this.props} {...props(newProps)} />;
+      }
+
+      return <TargetComponent {...newProps} />;
     }
   }
 
