@@ -11,6 +11,9 @@ const atlas = (atlasRequestDescription, { options = {}, propName = 'request', au
         data: null,
         error: null,
       };
+
+      this.buildOptions = this.buildOptions.bind(this);
+      this.fetchData = this.fetchData.bind(this);
     }
 
     buildOptions() {
