@@ -2,20 +2,36 @@ import React, { Component } from 'react';
 import propTypes from 'prop-types';
 import hoistNonReactStatic from 'hoist-non-react-statics';
 
-const atlas = (atlasRequestDescription, { options, propName = 'data' } = {}) => (TargetComponent) => {
+const atlas = (atlasRequestDescription, { options = {}, propName = 'request', auto = true } = {}) => (TargetComponent) => {
   class AtlasConnectedComponent extends Component {
     constructor(props, context) {
       super(props, context);
       this.state = {
-        loading: true,
+        loading: auto,
         data: null,
         error: null,
       };
     }
 
-    componentDidMount() {
+    buildOptions() {
+      if (typeof options === 'function') {
+        return options(this.props);
+      }
+      return options;
+    }
+
+    fetchData(fetchOptions = {}) {
       const { client } = this.context;
-      client.fetch(atlasRequestDescription, options)
+      const finalOptions = {
+        ...this.buildOptions(),
+        ...fetchOptions,
+      };
+      this.setState({
+        loading: true,
+        data: null,
+        error: null,
+      });
+      client.fetch(atlasRequestDescription, finalOptions)
       .then(
         response => this.setState({
           loading: false,
@@ -32,9 +48,18 @@ const atlas = (atlasRequestDescription, { options, propName = 'data' } = {}) => 
       );
     }
 
+    componentDidMount() {
+      if (auto) {
+        this.fetchData();
+      }
+    }
+
     render() {
       const props = {...this.props};
-      props[propName] = this.state;
+      props[propName] = {
+        ...this.state,
+        fetchData: this.fetchData,
+      };
       return <TargetComponent {...props} />;
     }
   }
