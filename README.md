@@ -10,6 +10,8 @@ with npm
 $ npm install --save react-api-atlas
 ```
 
+with yarn
+
 ```sh
 $ yarn add react-api-atlas
 ```
