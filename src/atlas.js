@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import propTypes from 'prop-types';
 import hoistNonReactStatic from 'hoist-non-react-statics';
 
-const atlas = (atlasRequestDescription, { options = {}, propName = 'request', auto = true, props } = {}) => (TargetComponent) => {
+const atlas = (atlasRequestDescription, { options = {}, propName = 'request', auto = true, props, updateAfter } = {}) => (TargetComponent) => {
   class AtlasConnectedComponent extends Component {
     constructor(props, context) {
       super(props, context);
@@ -14,6 +14,7 @@ const atlas = (atlasRequestDescription, { options = {}, propName = 'request', au
 
       this.buildOptions = this.buildOptions.bind(this);
       this.fetchData = this.fetchData.bind(this);
+      this.handleOnCacheChange = this.handleOnCacheChange.bind(this);
     }
 
     buildOptions() {
@@ -35,13 +36,24 @@ const atlas = (atlasRequestDescription, { options = {}, propName = 'request', au
         error: null,
       });
       client.fetch(atlasRequestDescription, finalOptions)
-      .then(
-        response => this.setState({
-          loading: false,
-          data: response,
-          error: null,
-        }),
-      )
+      .then((response) => {
+        if (updateAfter) {
+          const cacheId = client.getCacheId(atlasRequestDescription);
+          client.updateCache(cacheId, updateAfter).then(
+            updatedResponse => this.setState({
+              loading: false,
+              data: updatedResponse,
+              error: null,
+            });
+          );
+        } else {
+          this.setState({
+            loading: false,
+            data: response,
+            error: null,
+          });  
+        }
+      })
       .catch(
         err => this.setState({
           loading: false,
@@ -51,10 +63,20 @@ const atlas = (atlasRequestDescription, { options = {}, propName = 'request', au
       );
     }
 
+    handleOnCacheChange(newCache) {
+      if (!this.state.loading && this.state.date !== newCache) {
+        this.setState({
+          data: newCache,
+        });
+      }
+    }
+
     componentDidMount() {
+      const { client } = this.context;
       if (auto) {
         this.fetchData();
       }
+      client.subscribeForCache(client.getCacheId(atlasRequestDescription), this.handleOnCacheChange);
     }
 
     render() {

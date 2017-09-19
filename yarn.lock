@@ -28,9 +28,9 @@ anymatch@^1.3.0:
     micromatch "^2.1.5"
     normalize-path "^2.0.0"
 
-api-atlas@^0.0.3:
-  version "0.0.3"
-  resolved "https://registry.yarnpkg.com/api-atlas/-/api-atlas-0.0.3.tgz#e935bb6b9c54049fe23ca32eba7505896d6af694"
+api-atlas@^0.0.4:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/api-atlas/-/api-atlas-0.0.4.tgz#6ec535119483eef763e254b4d53db596d8fd3e13"
 
 aproba@^1.0.3:
   version "1.1.2"
