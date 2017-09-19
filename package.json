@@ -1,6 +1,6 @@
 {
   "name": "react-api-atlas",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "api-atlas with react",
   "main": "./lib/index.js",
   "author": "gugamm",
@@ -16,7 +16,7 @@
     "fetch"
   ],
   "dependencies": {
-    "api-atlas": "^0.0.4",
+    "api-atlas": "^0.0.5",
     "hoist-non-react-statics": "^2.3.1",
     "prop-types": "^15.5.10"
   },
