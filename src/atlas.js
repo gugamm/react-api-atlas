@@ -39,12 +39,13 @@ const atlas = (atlasRequestDescription, { options = {}, propName = 'request', au
       .then((response) => {
         if (updateAfter) {
           const cacheId = client.getCacheId(atlasRequestDescription);
-          client.updateCache(cacheId, updateAfter).then(
+          client.updateCache(cacheId, updateAfter)
+          .then(
             updatedResponse => this.setState({
               loading: false,
               data: updatedResponse,
               error: null,
-            });
+            })
           );
         } else {
           this.setState({
