@@ -1,6 +1,6 @@
 {
   "name": "react-api-atlas",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "api-atlas with react",
   "main": "./lib/index.js",
   "author": "gugamm",

@@ -65,7 +65,7 @@ const atlas = (atlasRequestDescription, { options = {}, propName = 'request', au
     }
 
     handleOnCacheChange(newCache) {
-      if (!this.state.loading && this.state.date !== newCache) {
+      if (!this.state.loading && this.state.data !== newCache) {
         this.setState({
           data: newCache,
         });
