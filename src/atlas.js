@@ -77,7 +77,11 @@ const atlas = (atlasRequestDescription, { options = {}, propName = 'request', au
       if (auto) {
         this.fetchData();
       }
-      client.subscribeForCache(client.getCacheId(atlasRequestDescription), this.handleOnCacheChange);
+      this.unsubscribe = client.subscribeForCache(client.getCacheId(atlasRequestDescription), this.handleOnCacheChange);
+    }
+
+    componentWillUnmount() {
+      this.unsubscribe();
     }
 
     render() {
