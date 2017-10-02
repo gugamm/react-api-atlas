@@ -2,7 +2,9 @@ import React, { Component } from 'react';
 import propTypes from 'prop-types';
 import hoistNonReactStatic from 'hoist-non-react-statics';
 
-const atlas = (atlasRequestDescription, { options = {}, propName = 'request', auto = true, props, updateAfter } = {}) => (TargetComponent) => {
+const defUpdate = () => {};
+
+const atlas = (atlasRequestDescription, { options = {}, propName = 'request', auto = true, props } = {}) => (TargetComponent) => {
   class AtlasConnectedComponent extends Component {
     constructor(props, context) {
       super(props, context);
@@ -11,10 +13,12 @@ const atlas = (atlasRequestDescription, { options = {}, propName = 'request', au
         data: null,
         error: null,
       };
-
+      this.prevRequest = null;
+      this.unsubscribeForStateChange = null;
       this.buildOptions = this.buildOptions.bind(this);
       this.fetchData = this.fetchData.bind(this);
-      this.handleOnCacheChange = this.handleOnCacheChange.bind(this);
+      this.refetch = this.refetch.bind(this);
+      this.handleRequestStateChange = this.handleRequestStateChange.bind(this);
     }
 
     buildOptions() {
@@ -25,63 +29,48 @@ const atlas = (atlasRequestDescription, { options = {}, propName = 'request', au
     }
 
     fetchData(fetchOptions = {}) {
-      const { client } = this.context;
+      const { atlasClient } = this.context;
       const finalOptions = {
         ...this.buildOptions(),
         ...fetchOptions,
       };
-      this.setState({
-        loading: true,
-        data: null,
-        error: null,
-      });
-      client.fetch(atlasRequestDescription, finalOptions)
-      .then((response) => {
-        if (updateAfter) {
-          const cacheId = client.getCacheId(atlasRequestDescription);
-          client.updateCache(cacheId, updateAfter)
-          .then(
-            updatedResponse => this.setState({
-              loading: false,
-              data: updatedResponse,
-              error: null,
-            })
-          );
-        } else {
-          this.setState({
-            loading: false,
-            data: response,
-            error: null,
-          });  
+
+      // build or get previous request
+      const request = atlasClient.buildRequest(atlasRequestDescription, finalOptions);
+
+      // subscribe for changes
+      if (this.prevRequest !== request) {
+        if (this.prevRequest) {
+          this.unsubscribeForStateChange();
         }
-      })
-      .catch(
-        err => this.setState({
-          loading: false,
-          data: null,
-          error: err,
-        }),
-      );
+        request.subscribeForState(this.handleRequestStateChange);
+        this.prevRequest = request;
+      }
+
+      // subscribe to response
+      return request.doFetch();
     }
 
-    handleOnCacheChange(newCache) {
-      if (!this.state.loading && this.state.data !== newCache) {
-        this.setState({
-          data: newCache,
-        });
-      }
+    // fetch must have been called first
+    refetch() {
+      const request = this.prevRequest;
+      return request.refetch();
+    }
+
+    handleRequestStateChange(newState) {
+      this.setState(newState);
     }
 
     componentDidMount() {
-      const { client } = this.context;
       if (auto) {
         this.fetchData();
       }
-      this.unsubscribe = client.subscribeForCache(client.getCacheId(atlasRequestDescription), this.handleOnCacheChange);
     }
 
     componentWillUnmount() {
-      this.unsubscribe();
+      if (this.unsubscribeForStateChange) {
+        this.unsubscribeForStateChange();
+      }
     }
 
     render() {
@@ -89,10 +78,18 @@ const atlas = (atlasRequestDescription, { options = {}, propName = 'request', au
       newProps[propName] = {
         ...this.state,
         fetchData: this.fetchData,
+        refetch: this.refetch,
+        client: this.context.atlasClient,
       };
 
       if (props) {
-        return <TargetComponent {...this.props} {...props(newProps)} />;
+        const mapProps = {
+          ownProps: {...this.props},
+          fetchData: this.fetchData,
+          refetch: this.refetch,
+          client: this.context.atlasClient,
+        };
+        return <TargetComponent {...newProps} {...props(mapProps)} />;
       }
 
       return <TargetComponent {...newProps} />;
@@ -100,12 +97,12 @@ const atlas = (atlasRequestDescription, { options = {}, propName = 'request', au
   }
 
   AtlasConnectedComponent.contextTypes = {
-    client: propTypes.object.isRequired,
+    atlasClient: propTypes.object.isRequired,
   };
 
   hoistNonReactStatic(AtlasConnectedComponent, TargetComponent);
 
   return AtlasConnectedComponent;
-}
+};
 
 export default atlas;

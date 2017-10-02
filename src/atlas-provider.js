@@ -4,7 +4,7 @@ import propTypes from 'prop-types';
 class AtlasProvider extends Component {
   getChildContext() {
     return {
-      client: this.props.client,
+      atlasClient: this.props.client,
     };
   }
 
@@ -14,6 +14,10 @@ class AtlasProvider extends Component {
 }
 
 AtlasProvider.childContextTypes = {
+  atlasClient: propTypes.object.isRequired,
+};
+
+AtlasProvider.propTypes = {
   client: propTypes.object.isRequired,
 };
 
