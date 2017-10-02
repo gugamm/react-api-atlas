@@ -40,10 +40,10 @@ const atlas = (atlasRequestDescription, { options = {}, propName = 'request', au
 
       // subscribe for changes
       if (this.prevRequest !== request) {
-        if (this.prevRequest) {
+        if (this.prevRequest && this.unsubscribeForStateChange) {
           this.unsubscribeForStateChange();
         }
-        request.subscribeForState(this.handleRequestStateChange);
+        this.unsubscribeForStateChange = request.subscribeForState(this.handleRequestStateChange);
         this.prevRequest = request;
       }
 
