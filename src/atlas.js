@@ -2,8 +2,6 @@ import React, { Component } from 'react';
 import propTypes from 'prop-types';
 import hoistNonReactStatic from 'hoist-non-react-statics';
 
-const defUpdate = () => {};
-
 const atlas = (atlasRequestDescription, { options = {}, propName = 'request', auto = true, props } = {}) => (TargetComponent) => {
   class AtlasConnectedComponent extends Component {
     constructor(props, context) {
